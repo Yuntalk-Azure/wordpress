@@ -24,8 +24,7 @@
       "type": "string"
     },
     "branch": {
-      "type": "string",
-      "defaultValue": ""
+      "type": "string"
     }
   },
   "resources": [
