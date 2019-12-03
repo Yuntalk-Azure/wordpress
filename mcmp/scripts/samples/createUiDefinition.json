@@ -1,0 +1,182 @@
+{
+    "handler": "Microsoft.Compute.MultiVm",
+    "version": "0.1.2-preview",
+    "parameters": {
+      "outputs": {
+        "siteName": "[basics('siteNameUi')]",
+        "hostingPlanName": "[basics('hostingPlanNameUi')]",
+        "sku": "[basics('skuUi')]",
+        "mysqlServerName": "[steps('mysql').mysqlServerNameUi]",
+        "mysqlServerSku": "[steps('mysql').mysqlServerSkuUi]",
+        "mysqlServerVersion": "[steps('mysql').mysqlServerVersionUi]",
+        "mysqlUserName": "[steps('mysql').mysqlUserNameUi]",
+        "mysqlPassword": "[steps('mysql').mysqlPasswordUi]",
+        "mysqldatabaseName": "[steps('mysql').mysqldatabaseNameUi]",
+        "artifactsLocation": "https://gallery.windowsazure.cn/Artifact/20161101/WordPressCommunity.wordpress_4_6_1_mysql_pass.1.0.6/Artifacts/"
+      },
+      "basics": [
+        {
+          "name": "siteNameUi",
+          "type": "Microsoft.Common.TextBox",
+          "label": "Wordpress 网站名称",
+          "toolTip": "Wordpress 网站名称。名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。",
+          "constraints": {
+            "required": true,
+            "regex": "^[A-Za-z0-9]{2,60}$",
+            "validationMessage": "名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。"
+          }
+        },
+        {
+          "name": "hostingPlanNameUi",
+          "type": "Microsoft.Common.TextBox",
+          "label": "Wordpress 后台web应用服务器名称",
+          "toolTip": "Wordpress 后台web应用服务器名称。名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。",
+          "constraints": {
+            "required": true,
+            "regex": "^[A-Za-z0-9]{2,60}$",
+            "validationMessage": "名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。"
+          }
+        },
+        {
+          "name": "skuUi",
+          "type": "Microsoft.Common.DropDown",
+          "label": "web应用服务器类型",
+          "defaultValue": "F1",
+          "toolTip": "web应用服务器类型，F1为免费版，S1为标准版. 价格详情请访问: https://www.azure.cn/pricing/details/app-service/",
+          "constraints": {
+            "allowedValues": [
+              {
+                "label": "F1",
+                "value": "F1"
+              },
+              {
+                "label": "S1",
+                "value": "S1"
+              }
+            ]
+          }
+        }
+      ],
+      "steps": [
+        {
+          "name": "mysql",
+          "label": "MySQL PAAS 设置",
+          "subLabel": {
+            "preValidation": "配置 MySQL 参数",
+            "postValidation": "完成"
+          },
+          "bladeTitle": "MySQL 设置",
+          "elements": [
+            {
+              "name": "mysqlServerNameUi",
+              "type": "Microsoft.Common.TextBox",
+              "label": "MySql 服务器名",
+              "toolTip": "MySql 服务器的名字. 最大长度为64个字母数字字符. 请通过 @mysqlServerName.mysqldb.chinacloudapi.cn访问MySql数据库. 管理配置MySql数据库请访问 https://manage.windowsazure.cn",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-z0-9]{1,64}$",
+                "validationMessage": "名称包含小写字母和数字，名称长度必须介于1到64个字符之间。"
+              }
+            },
+            {
+              "name": "mysqlServerSkuUi",
+              "type": "Microsoft.Common.DropDown",
+              "label": "MySql 服务器的性能版本",
+              "defaultValue": "MS2",
+              "toolTip": "MySql 服务器的性能版本，价格详情请访问 https://www.azure.cn/pricing/details/mysql/",
+              "constraints": {
+                "allowedValues": [
+                  {
+                    "label": "MS1",
+                    "value": "MS1"
+                  },
+                  {
+                    "label": "MS2",
+                    "value": "MS2"
+                  },
+                  {
+                    "label": "MS3",
+                    "value": "MS3"
+                  },
+                  {
+                    "label": "MS4",
+                    "value": "MS4"
+                  },
+                  {
+                    "label": "MS5",
+                    "value": "MS5"
+                  },
+                  {
+                    "label": "MS6",
+                    "value": "MS6"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "mysqlServerVersionUi",
+              "type": "Microsoft.Common.DropDown",
+              "label": "MySQL服务器版本.",
+              "defaultValue": "5.6",
+              "toolTip": "MySQL服务器版本.",
+              "constraints": {
+                "allowedValues": [
+                  {
+                    "label": "5.5",
+                    "value": "5.5"
+                  },
+                  {
+                    "label": "5.6",
+                    "value": "5.6"
+                  },
+                  {
+                    "label": "5.7",
+                    "value": "5.7"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "mysqlUserNameUi",
+              "type": "Microsoft.Common.TextBox",
+              "label": "MySql 服务器登录名",
+              "toolTip": "MySql 服务器登录名. 登录名格式为 ‘MySQL服务器名%登录名’，名称包含小写字母和数字，长度小于16个字符。用户名和密码规范请参考： http://dev.mysql.com/doc/refman/5.6/en/user-names.html",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-z0-9]{1,16}$",
+                "validationMessage": "名称包含小写字母和数字，名称长度必须介于1到16个字符之间。"
+              }
+            },
+            {
+              "name": "mysqlPasswordUi",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": {
+                "password": "MySQL 密码",
+                "confirmPassword": "确认 MySQL 密码"
+              },
+              "toolTip": "MySql 服务器登录密码。长度必须大于8个字符，小于64个字符。用户名和密码规范请参考： http://dev.mysql.com/doc/refman/5.6/en/user-names.html",
+              "constraints": {
+                "required": true,
+                "regex": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,64}$",
+                "validationMessage": "必须包含大小写字母和数字的组合，不能使用特殊字符，长度在8-64之间."
+              },
+              "options": {
+                "hideConfirmation": false
+              }
+            },
+            {
+              "name": "mysqldatabaseNameUi",
+              "type": "Microsoft.Common.TextBox",
+              "label": "MySql 数据库的名字.",
+              "toolTip": "MySql 数据库的名字。 名称包含数字、字母、连字符和下划线，最大长度为64个字母数字字符。请通过 @mysqlServerName.mysqldb.chinacloudapi.cn访问MySql数据库。 管理配置MySql数据库请访问 https://manage.windowsazure.cn",
+              "constraints": {
+                "required": true,
+                "regex": "^[A-Za-z0-9-_]{1,64}$",
+                "validationMessage": "名称包含数字、字母、连字符和下划线，名称长度必须介于1到64个字符之间。"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }

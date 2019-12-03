@@ -1,0 +1,59 @@
+{
+    "handler": "Microsoft.Compute.MultiVm",
+    "version": "0.1.2-preview",
+    "parameters": {
+      "outputs": {
+        "siteName": "[basics('siteNameUi')]",
+        "hostingPlanName": "[basics('hostingPlanNameUi')]",
+        "sku": "[basics('skuUi')]"
+      },
+      "basics": [
+        {
+          "name": "siteNameUi",
+          "type": "Microsoft.Common.TextBox",
+          "label": "WordPress 网站名称",
+          "toolTip": "WordPress 网站名称。名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。",
+          "constraints": {
+            "required": true,
+            "regex": "^[A-Za-z0-9]{2,60}$",
+            "validationMessage": "名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。"
+          }
+        },
+        {
+          "name": "hostingPlanNameUi",
+          "type": "Microsoft.Common.TextBox",
+          "label": "WordPress 后台web应用服务器名称",
+          "toolTip": "WordPress 后台web应用服务器名称。名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。",
+          "constraints": {
+            "required": true,
+            "regex": "^[A-Za-z0-9]{2,60}$",
+            "validationMessage": "名称必须包含大小写字母和数字，名称长度必须介于2到60个字符之间。"
+          }
+        },
+        {
+          "name": "skuUi",
+          "type": "Microsoft.Common.DropDown",
+          "label": "web应用服务器类型",
+          "defaultValue": "F1",
+          "toolTip": "web应用服务器类型，F1为免费版，B1为基础版，S1为标准版等，价格详情请访问: https://www.azure.cn/pricing/details/app-service/",
+          "constraints": {
+            "allowedValues": [
+              {
+                "label": "F1",
+                "value": "F1"
+              },
+              {
+                "label": "B1",
+                "value": "B1"
+              },
+              {
+                "label": "S1",
+                "value": "S1"
+              }
+            ]
+          }
+        }
+      ],
+      "steps":[]
+    }
+  }

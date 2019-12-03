@@ -1,0 +1,204 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "siteName": {
+            "type": "String",
+            "metadata": {
+                "description": "WordPress 网站名称."
+            }
+        },
+        "hostingPlanName": {
+            "type": "String",
+            "metadata": {
+                "description": "WordPress 后台web应用服务器名称."
+            }
+        },
+        "sku": {
+            "defaultValue": "F1",
+            "allowedValues": [
+                "F1",
+                "B1",
+                "S1"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "Web应用服务器类型，F1为免费版，B1为基础版，S1为标准版等等，部署后可以进行调整。价格详情请访问: https://www.azure.cn/pricing/details/app-service/"
+            }
+        },
+        "dbAdminLogin": {
+            "type": "string",
+            "metadata": {
+                "description": "MySQL 服务器登录名。登录名格式为 ‘MySQL服务器名%登录名’，长度小于16个字符。用户名和密码规范请参考： http://dev.mysql.com/doc/refman/5.6/en/user-names.html"
+            }
+        },
+        "dbAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "MySQL 服务器登录密码。长度必须大于8个字符，小于64个字符。用户名和密码规范请参考： http://dev.mysql.com/doc/refman/5.6/en/user-names.html"
+            }
+        },
+        "dbServerName": {
+            "type": "string",
+            "metadata": {
+                "description": "MySQL 服务器的名字. 最大长度为64个字母数字字符. 请通过 @mysqlServerName.mysqldb.chinacloudapi.cn访问MySql数据库. 管理配置MySql数据库请访问 https://manage.windowsazure.cn"
+            }
+        },
+        "dbSkuCapacity": {
+            "type": "int"
+        },
+        "dbSkuFamily": {
+            "type": "string"
+        },
+        "dbSkuName": {
+            "type": "string"
+        },
+        "dbSkuSizeMB": {
+            "type": "int"
+        },
+        "dbSkuTier": {
+            "type": "string"
+        },
+        "dbVersion": {
+            "defaultValue": "5.7",
+            "allowedValues": [
+                "5.7",
+                "5.6",
+                "8.0"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "MySQL服务器版本. "
+            }
+        },
+        "dbBackupRetentionDays": {
+            "type": "int"
+        },
+        "dbGeoRedundantBackup": {
+            "type": "string"
+        },
+        "dbPreviewFeature": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "dbStorageAutoGrow": {
+            "type": "string",
+            "defaultValue": "Enabled"
+        },
+        "mysqldatabaseName": {
+            "type": "String",
+            "metadata": {
+                "description": "数据库名字。必须小于64个字符，其它命名规范请参考: http://dev.mysql.com/doc/refman/5.6/en/identifiers.html"
+            }
+        },
+        "artifactsLocation": {
+            "type": "String",
+            "metadata": {
+                "description": "网站包地址"
+            }
+        }
+    },
+    "variables": {
+        "servicePackageLink": "[concat(parameters('artifactsLocation'), 'yuntalk-wordpress-db-paas.zip')]",
+        "dbConnectionString": "[concat('Data Source=', parameters('mysqlServerName'), '.mysqldb.chinacloudapi.cn', ';Database=', parameters('mysqldatabaseName'), ';User Id=', parameters('mysqlUserName'), '@', parameters('mysqlServerName'), ';Password=', parameters('mysqlPassword'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2015-08-01",
+            "name": "[parameters('hostingPlanName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('sku')]",
+                "capacity": 1
+            },
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2015-08-01",
+            "name": "[parameters('siteName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverFarms/', parameters('hostingPlanName'))]"
+            ],
+            "kind": "app",
+            "properties": {
+                "name": "[parameters('siteName')]",
+                "serverFarmId": "[parameters('hostingPlanName')]"
+            },
+            "resources": [
+                {
+                    "type": "extensions",
+                    "apiVersion": "2015-08-01",
+                    "name": "MSDeploy",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('siteName'))]"
+                    ],
+                    "properties": {
+                        "packageUri": "[variables('servicePackageLink')]",
+                        "dbType": "None"
+                    }
+                },
+                {
+                    "type": "config",
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('siteName'))]",
+                        "[concat('Microsoft.Web/sites/', parameters('siteName'),'/Extensions/MSDeploy')]"
+                    ],
+                    "properties": {
+                        "phpVersion": "7.3"
+                    }
+                },
+                {
+                    "type": "config",
+                    "apiVersion": "2015-08-01",
+                    "name": "connectionstrings",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('siteName'))]",
+                        "[concat('Microsoft.Web/sites/', parameters('siteName'),'/config/web')]",
+                        "[concat('Microsoft.MySql/servers/', parameters('mysqlServerName'))]"
+                    ],
+                    "properties": {
+                        "DefaultConnection": {
+                            "value": "[variables('dbConnectionString')]",
+                            "type": "MySql"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.DBforMySQL/servers",
+            "kind": "",
+            "location": "[parameters('location')]",
+            "name": "[parameters('dbServerName')]",
+            "properties": {
+                "version": "[parameters('dbVersion')]",
+                
+                "administratorLogin": "[parameters('dbAdminLogin')]",
+                "administratorLoginPassword": "[parameters('dbAdminPassword')]",
+                "storageProfile": {
+                    "storageMB": "[parameters('dbSkuSizeMB')]",
+                    "backupRetentionDays": "[parameters('dbBackupRetentionDays')]",
+                    "geoRedundantBackup": "[parameters('dbGeoRedundantBackup')]",
+                    "storageAutoGrow": "[parameters('dbStorageAutoGrow')]"
+                },
+                "previewFeature": "[parameters('dbPreviewFeature')]"
+            },
+            "sku": {
+                "name": "[parameters('dbSkuName')]",
+                "tier": "[parameters('dbSkuTier')]",
+                "capacity": "[parameters('dbSkuCapacity')]",
+                "size": "[parameters('dbSkuSizeMB')]",
+                "family": "[parameters('dbSkuFamily')]"
+            }
+        }
+    ]
+}
