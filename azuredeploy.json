@@ -24,7 +24,8 @@
       "type": "string"
     },
     "branch": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "master"
     }
   },
   "resources": [
